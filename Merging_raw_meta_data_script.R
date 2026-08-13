@@ -5,6 +5,7 @@ library(stringr)
 library(tibble)
 library(ggplot2)
 library(limma)
+library(tidyverse)
 
 #-------------------------------------------------------------------
 # 1. Load data 
