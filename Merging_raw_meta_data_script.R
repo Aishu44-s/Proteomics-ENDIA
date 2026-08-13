@@ -4,6 +4,7 @@ library(dplyr)
 library(stringr)
 library(tibble)
 library(ggplot2)
+library(limma)
 
 #-------------------------------------------------------------------
 # 1. Load data 
