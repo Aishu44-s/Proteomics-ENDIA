@@ -3,9 +3,10 @@
 library(dplyr)
 library(stringr)
 library(tibble)
+library(ggplot2)
 
 #-------------------------------------------------------------------
-# 1. Load data
+# 1. Load data 
 #-------------------------------------------------------------------
 
 meta <- read.csv("C:/Users/Dell/Documents/BIOX7011/Data/Filtered_maternal_metadata.csv", header = TRUE)
