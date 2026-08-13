@@ -117,22 +117,8 @@ cat("\nSaved: merged_meta_protein.csv (", nrow(merged), "rows x", ncol(merged), 
 # 5. A note for the QC / missingness / imputation / normalisation
 #    steps that come next
 #-------------------------------------------------------------------
-# `merged` (269 rows) now includes the 37 duplicated "_a" rows — this
-# is what you want for the FINAL mixed-model dataset, since the
-# models use (1|riskset) + (1|mother_id) to correctly account for
-# these repeated rows.
-#
-# BUT: for missingness diagnostics, MCAR testing, imputation, and
-# normalisation, each physical sample should only be counted ONCE
-# (a duplicated row will double-count that sample's missingness
-# pattern / distort the imputation and normalisation reference
-# distributions). Use `unique_samples` below for all of those steps,
-# and only bring in `merged` (with duplicates) right at the very end,
-# just before modelling.
-#
-# Every downstream script should now start with:
-#   protein_col_names <- readRDS("protein_column_names.rds")
-# instead of re-detecting protein columns via regex.
+# unique_samples does not contain the "_a" samples as it will affect imputation and normalisation.
+# However it will be used for the model
 
 unique_samples <- merged %>%
   distinct(SampleID.2, .keep_all = TRUE)
