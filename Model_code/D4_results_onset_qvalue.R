@@ -381,17 +381,17 @@ write.csv(AIC.mat, "AIC_mat.csv")
 #----===========
 
 
-parameter_estimates_f.ls[[1]]
+#parameter_estimates_f.ls[[1]]
 
 #this is the btmean parameter estimate------------------------
-parameter_estimates_btmean<-mapply(function(x) (sapply(x,function(y)as.data.frame(y[[2]][1]))),parameter_estimates_f.ls)
-parameter_estimates_btmean<-parameter_estimates_btmean[1:18,]
-head(parameter_estimates_btmean)
-parameter_estimates_btmean<- data.frame(apply(parameter_estimates_btmean,2,function(x) as.numeric(x)))
+#parameter_estimates_btmean<-mapply(function(x) (sapply(x,function(y)as.data.frame(y[[2]][1]))),parameter_estimates_f.ls)
+#parameter_estimates_btmean<-parameter_estimates_btmean[1:18,]
+#head(parameter_estimates_btmean)
+#parameter_estimates_btmean<- data.frame(apply(parameter_estimates_btmean,2,function(x) as.numeric(x)))
 #row is model , column is response
 
 #note divide by 4 as dilution factor
-parameter_estimates_btmean<-parameter_estimates_btmean/4
+#parameter_estimates_btmean<-parameter_estimates_btmean/4
 
 
 
@@ -401,11 +401,11 @@ parameter_estimates_btmean<-parameter_estimates_btmean/4
 #----===========
 
 
-sapply(parameter_estimates_f.ls,function(y)as.data.frame(y[[2]])[2,2])
-parameter_estimates_btmean_se<-mapply(function(x) (sapply(x,function(y)as.data.frame(y)[2,2])),parameter_estimates_f.ls)
-parameter_estimates_btmean_se
-parameter_estimates_btmean_se<-parameter_estimates_btmean_se[1:18,]
-head(parameter_estimates_btmean_se)
-parameter_estimates_btmean_se<- data.frame(apply(parameter_estimates_btmean_se,2,function(x) as.numeric(x)))
+#sapply(parameter_estimates_f.ls,function(y)as.data.frame(y[[2]])[2,2])
+#parameter_estimates_btmean_se<-mapply(function(x) (sapply(x,function(y)as.data.frame(y)[2,2])),parameter_estimates_f.ls)
+#parameter_estimates_btmean_se
+#parameter_estimates_btmean_se<-parameter_estimates_btmean_se[1:18,]
+#head(parameter_estimates_btmean_se)
+#parameter_estimates_btmean_se<- data.frame(apply(parameter_estimates_btmean_se,2,function(x) as.numeric(x)))
 
-parameter_estimates_btmean_se<-parameter_estimates_btmean_se/4
+#parameter_estimates_btmean_se<-parameter_estimates_btmean_se/4
