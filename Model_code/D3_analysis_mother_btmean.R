@@ -386,74 +386,72 @@ table(resp[failed_idx[,"protein_i"]])          # which proteins are failing most
 #------------
 #RERUN MODELS 
 #------------
-#rerun models which failed 
-#note: example code -all models OK for reduced responses
+#rerun models which failed convergence (29 pairs, identified via warn1.ls / had_warning check)
 
+nrow(failed_idx)
 
-length(resp)
-
-i=1;j=1
-#for each response
-for( i in c(1)){
+for (idx in 1:nrow(failed_idx)) {
   
-  cat("i=",i,"\n")
+  i <- failed_idx[idx, "protein_i"]
+  j <- failed_idx[idx, "model_j"]
+  
+  cat("i=", i, "\n")
+  cat("j=", j, "\n")
   print(resp[i])
-  #for each model
-  for( j in c(1)){
-    
-    
-    
-    #for( j in 1:length(names(model))){
-    cat("i=",i,"\n")
-    cat("j=",j,"\n")
-    rm(form,warn1,mod,conv)
-    
-    #name model
-    k<-names(model)[j]
-    
-    # Get data
-    tmp<-mother
-    w<-which(names(tmp)==resp[i]);w
-    names(tmp)[w]<-"btmean"
-    tmp<-tmp[!is.na(tmp$btmean),]
-    
-    
-    #Model formula
-    form<-as.formula(model[[j]])
-    
-    #Fit model
-    warn1<-ch(
-      mod<-lmer(formula=form,weight=weightTEDDY,data=tmp,control=lmerControl(optimizer = "bobyqa",
-                                                                             optCtrl = list(maxfun = 2e5)))
-    )
-    
-    conv<-mod@optinfo$conv
-    
-    #Warnings and convergence capture
-    warn1.ls[[i]][[j]]<-warn1
-    conv.ls[[i]][[j]]<-conv
-    
-    #Model parameters
-    analysis.ls[[i]][[j]]<-summary(mod)
-    
-    
-    #Wald p-values
-    anova.ls[[i]][[j]]<-Anova(mod)
-    
-    
-    
-    #AIC/BIC
-    AIC.ls[[i]][[j]]<-summary(mod)$AICtab
-    
-    
-    #Parameter estimates fixed and random
-    parameter_estimates_f.ls[[i]][[j]]<-coef(summary(mod))
-    parameter_estimates_r.ls[[i]][[j]]<-as.data.frame(VarCorr(mod))
-    names(summary(mod))
-    
-    
-    #Log-likelihood test
-    loglik.ls[[i]][[j]]<-summary(mod)$logLik
-    
-  }
+  
+  rm(form, warn1, mod, conv)
+  
+  #name model
+  k <- names(model)[j]
+  
+  # Get data
+  tmp <- mother
+  w <- which(names(tmp) == resp[i]); w
+  names(tmp)[w] <- "btmean"
+  tmp <- tmp[!is.na(tmp$btmean), ]
+  
+  #Model formula
+  form <- as.formula(model[[j]])
+  
+  #Fit model
+  warn1 <- ch(
+    mod <- lmer(formula = form, weight = weightTEDDY, data = tmp,
+                control = lmerControl(optimizer = "bobyqa",
+                                      optCtrl = list(maxfun = 2e5)))
+  )
+  
+  conv <- mod@optinfo$conv
+  
+  #Warnings and convergence capture
+  warn1.ls[[i]][[j]] <- warn1
+  conv.ls[[i]][[j]]  <- conv
+  
+  #Model parameters
+  analysis.ls[[i]][[j]] <- summary(mod)
+  
+  #Wald p-values
+  anova.ls[[i]][[j]] <- Anova(mod)
+  
+  #AIC/BIC
+  AIC.ls[[i]][[j]] <- summary(mod)$AICtab
+  
+  #Parameter estimates fixed and random
+  parameter_estimates_f.ls[[i]][[j]] <- coef(summary(mod))
+  parameter_estimates_r.ls[[i]][[j]] <- as.data.frame(VarCorr(mod))
+  
+  #Log-likelihood test
+  loglik.ls[[i]][[j]] <- summary(mod)$logLik
+  
 }
+
+#---------------------------------------------------------------------------
+# Checking which models got fixed
+#---------------------------------------------------------------------------
+still_failing <- sapply(1:nrow(failed_idx), function(idx) {
+  i <- failed_idx[idx, "protein_i"]
+  j <- failed_idx[idx, "model_j"]
+  !is.null(warn1.ls[[i]][[j]]$w)
+})
+
+sum(still_failing)          # how many still have a warning after bobyqa
+failed_idx[still_failing, ] # which specific ones remain
