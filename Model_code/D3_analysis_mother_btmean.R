@@ -357,6 +357,31 @@ warn_w.mat
 
 #need to rerun some models 
 
+#-------------------------------------------------------------------------------
+# Checking models and proteins that failed to converge
+#-------------------------------------------------------------------------------
+
+had_warning <- sapply(warn1.ls, function(protein_results) {
+  sapply(protein_results, function(one_model) !is.null(one_model$w))
+})
+# had_warning is now a clean logical matrix: 18 rows (models) x 451 cols (proteins)
+# TRUE = this fit actually threw a warning, FALSE = it didn't
+
+failed_idx <- which(had_warning, arr.ind = TRUE)
+colnames(failed_idx) <- c("model_j", "protein_i")
+
+nrow(failed_idx)   # sanity check — should be a small number, not 8118
+
+had_error <- sapply(warn1.ls, function(protein_results) {
+  sapply(protein_results, function(one_model) !is.null(one_model$e))
+})
+error_idx <- which(had_error, arr.ind = TRUE)
+colnames(error_idx) <- c("model_j", "protein_i")
+nrow(error_idx)
+
+table(names(model)[failed_idx[,"model_j"]])   # which formulas are failing most
+table(resp[failed_idx[,"protein_i"]])          # which proteins are failing most
+
 
 #------------
 #RERUN MODELS 
