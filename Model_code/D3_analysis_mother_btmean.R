@@ -336,8 +336,9 @@ class(warn1.ls)
 
 
 
-warn_e.mat<-mapply(function(x) (sapply(x,function(y)(y[["e"]] ))),warn1.ls)
-warn_e.mat
+warn_e.mat <- sapply(warn1.ls, function(x) sapply(x, function(y) !is.null(y$e)))
+rownames(warn_e.mat) <- names(model)
+colnames(warn_e.mat) <- resp
 
 conv.ls
 conv_opt.mat<-mapply(function(x) (sapply(x,function(y)(y[["opt"]] ))),conv.ls)
@@ -350,8 +351,9 @@ conv_messages.mat<-mapply(function(x) (sapply(x,function(y)(y[[2]][["messages"]]
 conv_messages.mat
 
 #MAIN ONE
-warn_w.mat<-mapply(function(x) (sapply(x,function(y)(y[["w"]] ))),warn1.ls)
-warn_w.mat
+warn_w.mat <- sapply(warn1.ls, function(x) sapply(x, function(y) !is.null(y$w)))
+rownames(warn_w.mat) <- names(model)
+colnames(warn_w.mat) <- resp
 
 #save(conv.ls,warn1.ls, file="warn.RData")
 
