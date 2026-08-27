@@ -116,6 +116,7 @@ dev.off()
 #---extract  Log likelihood values into matrix
 loglik.mat<-mapply(function(x) (sapply(x,function(y)(y[[1]] ))),loglik.ls)
 loglik.mat;class(loglik.mat)
+write.csv(loglik.mat, "loglik_mat.csv")
 #mother id important risk set not
 
 
