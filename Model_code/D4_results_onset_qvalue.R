@@ -24,13 +24,7 @@ source("qvaluetruncfunction.R")
 #--------------------------------------------------------
 #q-value wrapper (replaces p.adjust_LiJiBH.mat)
 #--------------------------------------------------------
-#Applies qvalue_truncp() one row (=one model spec) at a time,
-#across all proteins in that row - same "family of tests" grouping
-#that p.adjust_LiJiBH.mat used, just via Storey's q-value method
-#instead of the Li & Ji effective-number-of-tests BH correction.
-#Rows that are entirely NA (e.g. T1D interaction terms not present
-#in every model formula - see D4 notes) are left as NA rather than
-#passed to qvalue_truncp, which errors on an all-NA input.
+
 q.adjust.mat <- function(pvalue.mat) {
   qvalue.mat <- pvalue.mat
   for (r in 1:nrow(pvalue.mat)) {
