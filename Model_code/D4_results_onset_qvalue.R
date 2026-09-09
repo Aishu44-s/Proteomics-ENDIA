@@ -282,6 +282,26 @@ View(qvalue_ccvisit)
 
 write.csv(qvalue_ccvisit,"qvalue_ccvisit_cal.csv")
 
+#------
+#this is the maternal_T1D MAIN EFFECT p-value--------------
+#only applicable to models 10-18 (interaction models) -
+#row 3 means ccvisit in models 1-9, but maternal_T1D in models 10-18,
+#because maternal_T1D is inserted as its own term in the interaction
+#formulas, shifting what row 3 represents. Rows 1-9 set to NA since
+#the term doesn't exist in those (non-interaction) models at all.
+
+pvalue_t1d<-pvalue_line3
+pvalue_t1d[1:9,]<-NA
+
+write.csv(pvalue_t1d,"pvalue_t1d_cal.csv")
+
+#q-values
+qvalue_t1d<-q.adjust.mat(pvalue_t1d)
+qvalue_t1d<-as.data.frame(qvalue_t1d)
+View(qvalue_t1d)
+
+write.csv(qvalue_t1d,"qvalue_t1d_cal.csv")
+
 
 
 #------
