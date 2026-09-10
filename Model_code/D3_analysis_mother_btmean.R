@@ -446,6 +446,80 @@ for (idx in 1:nrow(failed_idx)) {
   
 }
 
+# ============================================================================
+# MASTER TABLE: all fixed-effect results for every protein x model x term
+# Add after the re-run loop, before "Checking which models got fixed"
+# ============================================================================
+
+master_results <- dplyr::bind_rows(
+  
+  lapply(seq_along(resp), function(i) {
+    
+    dplyr::bind_rows(
+      
+      lapply(seq_along(model), function(j) {
+        
+        coef_tab <- parameter_estimates_f.ls[[i]][[j]]
+        
+        # Skip a protein-model pair if no coefficient table was created
+        if (is.null(coef_tab)) return(NULL)
+        
+        out <- as.data.frame(coef_tab)
+        out$Term <- rownames(out)
+        rownames(out) <- NULL
+        
+        # Identify the protein and fitted model
+        out$Protein <- resp[i]
+        out$ModelName <- names(model)[j]
+        out$Formula <- unname(model[[j]])
+        
+        # Model-quality flags
+        out$HadWarning <- !is.null(warn1.ls[[i]][[j]]$w)
+        out$HadError <- !is.null(warn1.ls[[i]][[j]]$e)
+        
+        conv <- conv.ls[[i]][[j]]
+        out$OptimizerCode <- if (!is.null(conv$opt)) conv$opt else NA
+        
+        out$ConvergenceMessage <- if (!is.null(conv$lme4$messages)) {
+          paste(unlist(conv$lme4$messages), collapse = " | ")
+        } else {
+          NA_character_
+        }
+        
+        # Raw coefficient-level significance only
+        p_col <- grep("^Pr\\(", names(out), value = TRUE)
+        if (length(p_col) == 1) {
+          out$RawPValue <- out[[p_col]]
+          out$RawP_lt_0.05 <- out$RawPValue < 0.05
+        } else {
+          out$RawPValue <- NA_real_
+          out$RawP_lt_0.05 <- NA
+        }
+        
+        out
+        
+      })
+    )
+  })
+)
+
+# Put identifying columns first
+master_results <- master_results %>%
+  dplyr::select(
+    Protein, ModelName, Formula, Term,
+    Estimate, `Std. Error`, df, `t value`, RawPValue, RawP_lt_0.05,
+    HadWarning, HadError, OptimizerCode, ConvergenceMessage,
+    dplyr::everything()
+  )
+
+write.csv(
+  master_results,
+  "master_results_proteomics_raw.csv",
+  row.names = FALSE
+)
+
+message("Saved: master_results_proteomics_raw.csv")
+
 #---------------------------------------------------------------------------
 # Checking which models got fixed
 #---------------------------------------------------------------------------
