@@ -6,7 +6,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/R-analysis%20workflow-276DC3?logo=r&logoColor=white" alt="R analysis workflow">
-  <img src="https://img.shields.io/badge/status-thesis%20analysis-6A5ACD" alt="Thesis analysis status">
   <img src="https://img.shields.io/badge/data-not%20included-important" alt="Data not included">
 </p>
 
