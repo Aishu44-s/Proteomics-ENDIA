@@ -1,0 +1,21 @@
+# R / RStudio
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Sensitive study data
+data/raw/
+data/processed/
+data/private/
+*.rds
+*.RData
+*.rda
+
+# Automatically generated outputs
+outputs/
+plots_trimester_effect/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
