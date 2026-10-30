@@ -36,7 +36,7 @@ Raw proteomics data and protected metadata
                     ↓
  Missingness assessment and sample-level quality control
                     ↓
-      Normalisation and RLE diagnostic assessment
+      Normalisation and RLE plotting
                     ↓
            Missing-value imputation (QRILC)
                     ↓
