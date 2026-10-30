@@ -34,13 +34,32 @@ protein_reduced <- read.csv(post_file, check.names = FALSE)
 protein_cols <- readRDS(protein_file)
 removed_ids <- readRDS(removed_file)
 
-stopifnot(all(c("SampleID", "case", "maternal_T1D") %in% names(protein_filtered)))
+outlier_labels <- setNames(
+  LETTERS[seq_along(removed_ids)],
+  removed_ids
+)
+
+stopifnot(
+  all(
+    c(
+      "SampleID",
+      "case",
+      "maternal_T1D",
+      "corrected_visit_sample"
+    ) %in% names(protein_reduced)
+  )
+)
 stopifnot(all(protein_cols %in% names(protein_filtered)))
 stopifnot(all(protein_cols %in% names(protein_reduced)))
 
 # ---- Shared labels and requested colours ---------------------------------
 case_colours <- c("Control" = "#4575b4", "Case" = "#d73027")
 maternal_t1d_colours <- c("No maternal T1D" = "#91bfdb", "Maternal T1D" = "#fc8d59")
+trimester_colours <- c(
+  "T01" = "#ed693b",
+  "T02" = "#43b097",
+  "T03" = "#cb5299"
+)
 
 make_case_label <- function(x) {
   factor(ifelse(as.character(x) %in% c("1", "Case", "case"), "Case", "Control"), levels = c("Control", "Case"))
@@ -48,6 +67,13 @@ make_case_label <- function(x) {
 
 make_maternal_t1d_label <- function(x) {
   factor(ifelse(as.character(x) %in% c("1", "Yes", "yes", "TRUE", "True"), "Maternal T1D", "No maternal T1D"), levels = c("No maternal T1D", "Maternal T1D"))
+}
+
+make_trimester_label <- function(x) {
+  factor(
+    as.character(x),
+    levels = c("T01", "T02", "T03")
+  )
 }
 
 # ---- A. Final heatmap: after protein filtering AND outlier removal -------
@@ -59,10 +85,17 @@ protein_order <- order(colMeans(final_missing), decreasing = TRUE)
 row_annotation <- data.frame(
   Offspring_IA = make_case_label(protein_reduced$case),
   Maternal_T1D = make_maternal_t1d_label(protein_reduced$maternal_T1D),
+  Trimester = make_trimester_label(
+    protein_reduced$corrected_visit_sample
+  ),
   row.names = protein_reduced$SampleID
 )
 
-annotation_colours <- list(Offspring_IA = case_colours, Maternal_T1D = maternal_t1d_colours)
+annotation_colours <- list(
+  Offspring_IA = case_colours,
+  Maternal_T1D = maternal_t1d_colours,
+  Trimester = trimester_colours
+)
 
 png(file.path(plot_dir, "Figure_QC_final_missingness_heatmap.png"), width = 3600, height = 2400, res = 300)
 pheatmap(
@@ -85,6 +118,7 @@ rownames(pre_mat) <- protein_filtered$SampleID
 sample_qc <- protein_filtered %>%
   transmute(
     SampleID,
+    Outlier_label = unname(outlier_labels[as.character(SampleID)]),
     Offspring_IA = make_case_label(case),
     Maternal_T1D = make_maternal_t1d_label(maternal_T1D),
     Removal_status = ifelse(SampleID %in% removed_ids, "Removed outlier", "Retained")
@@ -101,10 +135,20 @@ intensity_cutoff <- mean(sample_qc$total_log2_intensity) - 3 * sd(sample_qc$tota
 p_intensity <- ggplot(sample_qc, aes(x = sample_rank, y = total_log2_intensity)) +
   geom_point(aes(fill = Offspring_IA, shape = Maternal_T1D), size = 3, colour = "#333333", stroke = 0.35) +
   geom_point(data = filter(sample_qc, Removal_status == "Removed outlier"), shape = 1, size = 4.7, colour = "#000000", stroke = 1) +
-  geom_text_repel(data = filter(sample_qc, Removal_status == "Removed outlier"), aes(label = SampleID), size = 3, max.overlaps = Inf, min.segment.length = 0) +
+  geom_text_repel(data = filter(sample_qc, Removal_status == "Removed outlier"), aes(label = Outlier_label), size = 3, max.overlaps = Inf, min.segment.length = 0) +
   geom_hline(yintercept = intensity_cutoff, linetype = "dashed", colour = "#b2182b") +
   scale_fill_manual(values = case_colours, name = "Offspring IA outcome") +
-  scale_shape_manual(values = c("No maternal T1D" = 21, "Maternal T1D" = 24), name = "Maternal T1D") +
+  scale_shape_manual(values = c("No maternal T1D" = 22, "Maternal T1D" = 24), name = "Maternal T1D") +
+  guides(
+    fill = guide_legend(
+      override.aes = list(
+        shape = 21,
+        fill = unname(case_colours),
+        colour = "#333333",
+        size = 4
+      )
+    )
+  ) +
   labs(title = "Sample total intensity before outlier removal", subtitle = "Black outlines and labels identify samples removed by the multi-method outlier rule", x = "Sample rank by total observed log2 intensity", y = "Total observed log2 intensity") +
   theme_classic(base_size = 12) + theme(legend.position = "top")
 
@@ -113,9 +157,19 @@ ggsave(file.path(plot_dir, "Figure_QC_total_intensity_outliers.png"), p_intensit
 p_missingness_intensity <- ggplot(sample_qc, aes(x = total_log2_intensity, y = pct_missing)) +
   geom_point(aes(fill = Offspring_IA, shape = Maternal_T1D), size = 3, colour = "#333333", stroke = 0.35) +
   geom_point(data = filter(sample_qc, Removal_status == "Removed outlier"), shape = 1, size = 4.7, colour = "#000000", stroke = 1) +
-  geom_text_repel(data = filter(sample_qc, Removal_status == "Removed outlier"), aes(label = SampleID), size = 3, max.overlaps = Inf, min.segment.length = 0) +
+  geom_text_repel(data = filter(sample_qc, Removal_status == "Removed outlier"), aes(label = Outlier_label), size = 3, max.overlaps = Inf, min.segment.length = 0) +
   scale_fill_manual(values = case_colours, name = "Offspring IA outcome") +
-  scale_shape_manual(values = c("No maternal T1D" = 21, "Maternal T1D" = 24), name = "Maternal T1D") +
+  scale_shape_manual(values = c("No maternal T1D" = 22, "Maternal T1D" = 24), name = "Maternal T1D") +
+  guides(
+    fill = guide_legend(
+      override.aes = list(
+        shape = 21,
+        fill = unname(case_colours),
+        colour = "#333333",
+        size = 4
+      )
+    )
+  ) +
   labs(title = "Sample missingness and total intensity before outlier removal", subtitle = "Black outlines and labels identify samples removed by the multi-method outlier rule", x = "Total observed log2 intensity", y = "Missing values per sample (%)") +
   theme_classic(base_size = 12) + theme(legend.position = "top")
 

@@ -44,7 +44,7 @@ ggplot(intensity_long, aes(x = SampleID, y = log2(Intensity + 1))) +
 ggsave("intensity_boxplot_per_sample.png", width = 12, height = 5)
 
 ggplot(intensity_long, aes(x = log2(Intensity + 1))) +
-  geom_density(fill = "steelblue", alpha = 0.4) +
+  geom_density(fill = "#E94E77", alpha = 0.4) +
   theme_minimal() +
   labs(title = "Overall log2 protein intensity distribution",
        x = "log2(Intensity + 1)", y = "Density")
@@ -60,7 +60,7 @@ protein_abundance <- data.frame(
   mutate(rank = row_number())
 
 ggplot(protein_abundance, aes(x = rank, y = mean_log2_intensity)) +
-  geom_point(size = 0.8, alpha = 0.6, colour = "steelblue") +
+  geom_point(size = 0.8, alpha = 0.6, colour = "#E94E77") +
   theme_minimal() +
   labs(title = "Protein abundance rank plot",
        subtitle = paste0("n = ", nrow(protein_abundance), " proteins, ranked by mean log2 intensity"),
@@ -70,30 +70,47 @@ ggplot(protein_abundance, aes(x = rank, y = mean_log2_intensity)) +
 ggsave("protein_abundance_rank_plot.png", width = 8, height = 5, dpi = 600)
 
 # Total intensity per sample
-plot_total_intensity <- function(color_var, palette = "Set2") {
+plot_total_intensity <- function(color_var, colours, legend_title = color_var) {
   total_intensity <- data.frame(
     SampleID = unique_samples$SampleID,
-    total    = rowSums(intensity_mat, na.rm = TRUE),
-    Group    = factor(unique_samples[[color_var]])
+    total = rowSums(intensity_mat, na.rm = TRUE),
+    Group = factor(unique_samples[[color_var]])
   ) %>%
     arrange(total) %>%
     mutate(SampleID = factor(SampleID, levels = SampleID))
   
   ggplot(total_intensity, aes(x = SampleID, y = total, fill = Group)) +
     geom_col(width = 1) +
-    scale_fill_brewer(palette = palette, name = color_var) +
+    scale_fill_manual(values = colours, name = legend_title) +
     theme_minimal() +
     theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
-    labs(title = paste("Total Intensity per Sample (coloured by", color_var, ")"),
-         x = "Sample (ranked by total intensity)", y = "Total Intensity")
+    labs(
+      title = paste("Total intensity per sample by", legend_title),
+      x = "Sample (ranked by total intensity)",
+      y = "Total intensity"
+    )
 }
 
-p_intensity_plate    <- plot_total_intensity("Plate.x")
-p_intensity_case     <- plot_total_intensity("case")
-p_intensity_trimester <- plot_total_intensity("corrected_visit_sample")
+p_intensity_case <- plot_total_intensity(
+  "case",
+  colours = c("0" = "#4575b4", "1" = "#d73027"),
+  legend_title = "Offspring IA outcome"
+)
 
-ggsave("total_intensity_by_plate.png",     p_intensity_plate,     width = 10, height = 6, dpi = 600)
-ggsave("total_intensity_by_case.png",      p_intensity_case,      width = 10, height = 6, dpi = 600)
+p_intensity_plate <- plot_total_intensity(
+  "Plate.x",
+  colours = c("1" = "#5F8A8A", "2" = "#B86B7B", "3" = "#8FA374"),
+  legend_title = "Plate"
+)
+
+p_intensity_trimester <- plot_total_intensity(
+  "corrected_visit_sample",
+  colours = c("T01" = "#CCBB44", "T02" = "#EE6677", "T03" = "#66CCEE"),
+  legend_title = "Trimester"
+)
+
+ggsave("total_intensity_by_case.png", p_intensity_case, width = 10, height = 6, dpi = 600)
+ggsave("total_intensity_by_plate.png", p_intensity_plate, width = 10, height = 6, dpi = 600)
 ggsave("total_intensity_by_trimester.png", p_intensity_trimester, width = 10, height = 6, dpi = 600)
 
 # 3. Missingness per protein ---------------------------------------------
@@ -125,7 +142,7 @@ missing_mat <- missing_mat[, order(-missing_summary$pct_missing[match(colnames(m
 
 pheatmap(
   missing_mat,
-  color = c("skyblue2", "firebrick"),
+  color = c("#81E6D9", "#2D3748"),
   cluster_rows = TRUE,
   cluster_cols = FALSE,
   show_rownames = FALSE,
@@ -176,7 +193,7 @@ missing_mat_filtered <- ifelse(is.na(intensity_mat_filtered), 1, 0)
 
 pheatmap(
   missing_mat_filtered,
-  color = c("skyblue2", "firebrick"),
+  color = c("#81E6D9", "#2D3748"),
   cluster_rows = TRUE,
   cluster_cols = TRUE,
   show_rownames = FALSE,

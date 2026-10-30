@@ -41,7 +41,11 @@ cat("Missing values before imputation:", sum(missing_mask), "\n")
 
 # Plot colours
 case_colours <- c("Control" = "#4575b4", "Case" = "#d73027")
-plate_colours <- c("1" = "#6AA19E", "2" = "#F9F5E3", "3" = "#D97D8E")
+plate_colours <- c(
+  "1" = "#42B7B9",
+  "2" = "#F2D14B",
+  "3" = "#D691C1"
+)
 rle_plate_colours <- c("1" = "#42B7B9", "2" = "#F2D14B", "3" = "#D691C1")
 method_colours <- c(
   "Observed" = "#4d4d4d",
@@ -82,7 +86,9 @@ plot_RLE <- function(mat, title, meta_df = meta_qc, color_by = "Plate.x") {
 
 # Create a PCA plot; NIPALS is used before imputation to handle missing values
 plot_PCA <- function(mat, title, meta_df = meta_qc) {
+  
   pca_method <- if (anyNA(mat)) "nipals" else "svd"
+  
   pca_res <- pca(
     as.matrix(mat),
     method = pca_method,
@@ -90,26 +96,38 @@ plot_PCA <- function(mat, title, meta_df = meta_qc) {
     scale = "uv",
     center = TRUE
   )
-
+  
   pca_df <- as.data.frame(scores(pca_res)) %>%
     rownames_to_column("SampleID") %>%
     left_join(
-      meta_df %>% select(SampleID, Plate.x, case),
+      meta_df %>% select(SampleID, Plate.x),
       by = "SampleID"
     ) %>%
     mutate(
-      Plate.x = factor(Plate.x),
-      Case = factor(case, levels = c(0, 1), labels = c("Control", "Case"))
+      Plate.x = factor(
+        Plate.x,
+        levels = c("1", "2", "3")
+      )
     )
-
+  
   variance <- round(pca_res@R2[1:2] * 100, 1)
-
-  ggplot(pca_df, aes(x = PC1, y = PC2, fill = Case, shape = Plate.x)) +
-    geom_point(size = 2.8, alpha = 0.85, colour = "#333333", stroke = 0.3) +
-    scale_fill_manual(values = case_colours, name = "Offspring IA") +
-    scale_shape_manual(values = c("1" = 21, "2" = 22, "3" = 24), name = "Plate") +
+  
+  ggplot(
+    pca_df,
+    aes(x = PC1, y = PC2, colour = Plate.x)
+  ) +
+    geom_point(
+      size = 3,
+      alpha = 0.85
+    ) +
+    scale_colour_manual(
+      values = plate_colours,
+      name = "Plate"
+    ) +
     theme_classic(base_size = 11) +
-    theme(legend.position = "top") +
+    theme(
+      legend.position = "top"
+    ) +
     labs(
       title = title,
       x = paste0("PC1 (", variance[1], "%)"),

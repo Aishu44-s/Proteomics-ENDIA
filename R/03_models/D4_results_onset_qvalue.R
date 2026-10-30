@@ -19,7 +19,7 @@ library(ggplot2)
 #FUNCTIONS
 #=======================
 
-source("qvaluetruncfunction.R")
+source(file.path("R", "functions", "qvaluetruncfunction.R"))
 
 #--------------------------------------------------------
 #q-value wrapper (replaces p.adjust_LiJiBH.mat)
@@ -110,7 +110,6 @@ dev.off()
 #---extract  Log likelihood values into matrix
 loglik.mat<-mapply(function(x) (sapply(x,function(y)(y[[1]] ))),loglik.ls)
 loglik.mat;class(loglik.mat)
-write.csv(loglik.mat, "loglik_mat.csv")
 #mother id important risk set not
 
 
@@ -303,7 +302,6 @@ View(qvalue_t1d)
 write.csv(qvalue_t1d,"qvalue_t1d_cal.csv")
 
 
-
 #------
 #this is the cc &visit &t1d interaction p-value--------------
 
@@ -380,6 +378,8 @@ qvalue_t1dvisit<-as.data.frame(qvalue_t1dvisit)
 View(qvalue_t1dvisit)
 
 write.csv(qvalue_t1dvisit,"qvalue_t1dvisit_cal.csv")
+
+
 
 
 #---------------

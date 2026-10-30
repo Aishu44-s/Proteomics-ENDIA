@@ -32,7 +32,7 @@ library(lmerTest)
 #library(openxlsx)
 library(car)# for Anova function
 
-source(file = 'catch.R')
+source(file.path("R", "functions", "catch.R"))
 
 
 #==========
@@ -531,3 +531,4 @@ still_failing <- sapply(1:nrow(failed_idx), function(idx) {
 
 sum(still_failing)          # how many still have a warning after bobyqa
 failed_idx[still_failing, ] # which specific ones remain
+
